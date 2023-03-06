@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceRoot}/kernel/kernel",
-            "miDebuggerServerAddress": "localhost:25000",
+            "miDebuggerServerAddress": "localhost:26000",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceRoot}/kernel",
