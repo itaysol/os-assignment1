@@ -2,5 +2,5 @@
 
 
 void main(int argc, char argv[]){
-    printf("Hello World xv6\n");
+    printf("Hello Mundo xv6\n");
 }
