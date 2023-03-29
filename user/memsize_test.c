@@ -5,6 +5,9 @@
 
 void main(int argc, char argv[]){
     printf("memsize test\n");
-    int i = memsize();
-    printf("%d\n",i);
+    printf("%d\n",memsize());
+    int * allocate = (int*) malloc(20>>10);
+    printf("%d\n",memsize());
+    free(allocate);
+    printf("%d\n",memsize());
 }
