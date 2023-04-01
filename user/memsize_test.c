@@ -15,7 +15,7 @@ void main(int argc, char *argv[]){
 void main(int argc, char argv[]){
     printf("memsize test\n");
     printf("%d\n",memsize());
-    int * allocate = (int*) malloc(20>>10);
+    int * allocate = (int*) malloc(20000);
     printf("%d\n",memsize());
     free(allocate);
     printf("%d\n",memsize());
