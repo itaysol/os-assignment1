@@ -83,7 +83,8 @@ void            printfinit(void);
 
 // proc.c
 int             cpuid(void);
-void            exit(int,char*);
+void            exit(int);
+void            exit2(int,char*);
 int             fork(void);
 int             growproc(int);
 void            proc_mapstacks(pagetable_t);

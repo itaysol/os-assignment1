@@ -342,13 +342,19 @@ reparent(struct proc *p)
   }
 }
 
+
+void 
+exit(int status){
+  exit2(status,"");
+}
 // Exit the current process.  Does not return.
 // An exited process remains in the zombie state
 // until its parent calls wait().
 void
-exit(int status, char* exit_msg)
+exit2(int status, char* exit_msg)
 {
   struct proc *p = myproc();
+  p->exit_msg = exit_msg;
 
   if(p == initproc)
     panic("init exiting");

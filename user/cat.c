@@ -36,7 +36,7 @@ main(int argc, char *argv[])
       fprintf(2, "cat: cannot open %s\n", argv[i]);
       exit(1);
     }
-    cat(fd);
+    cat(fd)
     close(fd);
   }
   exit(0);
