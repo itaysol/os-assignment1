@@ -1,0 +1,108 @@
+# Query: exit(0)
+
+75 results - 15 files
+
+user/echo.c:
+  18:   exit(0,"");
+
+user/forktest.c:
+  28:       exit(0,"");
+  55:   exit(0,"");
+
+user/grep.c:
+  50:     exit(0,"");
+  61:   exit(0,"");
+
+user/grind.c:
+  110:         exit(0,"");
+  121:         exit(0,"");
+  136:         exit(0,"");
+  151:         exit(0,"");
+  172:         exit(0,"");
+  189:         exit(0,"");
+  310:     exit(0,"");
+  321:     exit(0,"");
+  333:   exit(0,"");
+  343:       exit(0,"");
+
+user/kill.c:
+  16:   exit(0,"");
+
+user/ln.c:
+  14:   exit(0,"");
+
+user/ls.c:
+  81:     exit(0,"");
+  85:   exit(0,"");
+
+user/mkdir.c:
+  22:   exit(0,"");
+
+user/rm.c:
+  22:   exit(0,"");
+
+user/sh.c:
+  131:   exit(0,"");
+  172:   exit(0,"");
+
+user/stressfs.c:
+  48:   exit(0,"");
+
+user/ulib.c:
+  14:   exit(0,"");
+
+user/usertests.c:
+   285:   exit(0,"");
+   400:     exit(0,"");
+   469:     exit(0,"");
+   506:     exit(0,"");
+   725:     exit(0,"");
+   758:     exit(0,"");
+   805:       exit(0,"");
+   815:   exit(0,"");
+   926:       exit(0,"");
+   929:   exit(0,"");
+   943:       exit(0,"");
+   951:         exit(0,"");
+   979:           exit(0,"");
+   983:       exit(0,"");
+  1011:         exit(0,"");
+  1018:     exit(0,"");
+  1044:       exit(0,"");
+  1049:   exit(0,"");
+  1076:     exit(0,"");
+  1083:       exit(0,"");
+  1115:     exit(0,"");
+  1141:     exit(0,"");
+  1182:       exit(0,"");
+  1249:       exit(0,"");
+  1423:       exit(0,"");
+  1483:       exit(0,"");
+  1518:     exit(0,"");
+  1970:       exit(0,"");
+  2013:       exit(0,"");
+  2055:     exit(0,"");
+  2316:     exit(0,"");
+  2419:     exit(0,"");
+  2442:     exit(0,"");
+  2459:   exit(0,"");
+  2480:     exit(0,"");
+  2495:     exit(0,"");
+  2513:     exit(0,"");
+  2517:   exit(0,"");
+  2571:   exit(0,"");
+  2728:       exit(0,"");
+  2738:   exit(0,"");
+  2775:   exit(0,"");
+  2806:       exit(0,"");
+  2812:   exit(0,"");
+  2956:     exit(0,"");
+  3023:     exit(0,"");
+  3100:   exit(0,"");
+
+user/wc.c:
+  42:     exit(0,"");
+  53:   exit(0,"");
+
+user/zombie.c:
+  13:   exit(0,"");

@@ -11,13 +11,15 @@ sys_exit(void)
 {
   int n;
   char exit_msg [32];
+  int length;
   argint(0, &n);
-  if(argstr(1, exit_msg, 32)==-1){
-    exit(n);
+  length = argstr(1, exit_msg, 32);
+  if(length > 0){
+    for(int i = 0; i < length; i++){
+      myproc()->exit_msg[i] = exit_msg[i];
+    }
   }
-  else{
-    exit2(n, exit_msg);
-  }
+  exit(n, exit_msg);
   return 0;  // not reached
 }
 
@@ -37,8 +39,10 @@ uint64
 sys_wait(void)
 {
   uint64 p;
+  uint64 b;
   argaddr(0, &p);
-  return wait(p);
+  argaddr(1, &b);
+  return wait(p,b);
 }
 
 uint64

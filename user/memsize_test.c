@@ -9,5 +9,5 @@ void main(int argc, char argv[]){
     printf("%d\n",memsize());
     free(allocate);
     printf("%d\n",memsize());
-    exit2(0,"hellooo");
+ //   exit(0,"hellooo");
 }
