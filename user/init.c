@@ -39,7 +39,8 @@ main(void)
     for(;;){
       // this call to wait() returns if the shell exits,
       // or if a parentless process exits.
-      wpid = wait((int *) 0);
+      char* child_exit_msg="";
+      wpid = wait((int *)0, child_exit_msg);
       if(wpid == pid){
         // the shell exited; restart it.
         break;

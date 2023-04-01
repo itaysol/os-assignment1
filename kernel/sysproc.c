@@ -11,14 +11,9 @@ sys_exit(void)
 {
   int n;
   char exit_msg [32];
-  int length;
+  // int length;
   argint(0, &n);
-  length = argstr(1, exit_msg, 32);
-  if(length > 0){
-    for(int i = 0; i < length; i++){
-      myproc()->exit_msg[i] = exit_msg[i];
-    }
-  }
+  argstr(1, exit_msg, 32);
   exit(n, exit_msg);
   return 0;  // not reached
 }

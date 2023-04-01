@@ -350,7 +350,6 @@ void
 exit(int status, char* exit_msg)
 {
   struct proc *p = myproc();
-  p->exit_msg = exit_msg;
 
   if(p == initproc)
     panic("init exiting");
@@ -380,7 +379,24 @@ exit(int status, char* exit_msg)
   acquire(&p->lock);
 
   p->xstate = status;
-  p->exit_msg = exit_msg;
+  printf("proc|exit|385"); 
+  int nullCheck;
+  argint(1, &nullCheck);
+  int length = argstr(1, exit_msg, 32);
+  if (nullCheck ==0){
+   for (int i=0 ; i<32; i++) { // filling the rest of the exitmsg with 0
+      p->exit_msg[i]=0;
+    }
+  }
+
+  else {
+    for (int i=0 ; i<length; i++) {
+      p->exit_msg[i]=exit_msg[i];
+    }
+    for (int i=length ; i<32; i++) { // filling the rest of the exitmsg with 0
+      p->exit_msg[i]=0;
+    }
+  }
   p->state = ZOMBIE;
 
   release(&wait_lock);
@@ -413,8 +429,9 @@ wait(uint64 addr,uint64 buff)
         if(pp->state == ZOMBIE){
           // Found one.
           pid = pp->pid;
+          copyout(p->pagetable,(uint64)buff, (char *)&pp->exit_msg,sizeof(pp->exit_msg));
           if(addr != 0 && copyout(p->pagetable, addr, (char *)&pp->xstate,
-                                  sizeof(pp->xstate)) < 0 && copyout(p->pagetable, buff, (char *)&pp->exit_msg,sizeof(pp->exit_msg)) < 0) {
+                                  sizeof(pp->xstate)) < 0) {
             release(&pp->lock);
             release(&wait_lock);
             return -1;

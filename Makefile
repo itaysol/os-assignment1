@@ -133,6 +133,7 @@ UPROGS=\
 	$U/_wc\
 	$U/_zombie\
 	$U/_helloworld\
+	$U/_goodbye\
 	$U/_memsize_test\
 
 
