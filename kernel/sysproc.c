@@ -11,6 +11,7 @@ sys_exit(void)
 {
   int n;
   char exit_msg [32];
+  // int length;
   argint(0, &n);
   argstr(1, exit_msg, 32);
   exit(n, exit_msg);
@@ -33,8 +34,10 @@ uint64
 sys_wait(void)
 {
   uint64 p;
+  uint64 b;
   argaddr(0, &p);
-  return wait(p);
+  argaddr(1, &b);
+  return wait(p,b);
 }
 
 uint64

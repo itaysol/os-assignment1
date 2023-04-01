@@ -342,6 +342,7 @@ reparent(struct proc *p)
   }
 }
 
+
 // Exit the current process.  Does not return.
 // An exited process remains in the zombie state
 // until its parent calls wait().
@@ -378,7 +379,24 @@ exit(int status, char* exit_msg)
   acquire(&p->lock);
 
   p->xstate = status;
-  p->exit_msg = exit_msg;
+  printf("proc|exit|385"); 
+  int nullCheck;
+  argint(1, &nullCheck);
+  int length = argstr(1, exit_msg, 32);
+  if (nullCheck ==0){
+   for (int i=0 ; i<32; i++) { // filling the rest of the exitmsg with 0
+      p->exit_msg[i]=0;
+    }
+  }
+
+  else {
+    for (int i=0 ; i<length; i++) {
+      p->exit_msg[i]=exit_msg[i];
+    }
+    for (int i=length ; i<32; i++) { // filling the rest of the exitmsg with 0
+      p->exit_msg[i]=0;
+    }
+  }
   p->state = ZOMBIE;
 
   release(&wait_lock);
@@ -391,7 +409,7 @@ exit(int status, char* exit_msg)
 // Wait for a child process to exit and return its pid.
 // Return -1 if this process has no children.
 int
-wait(uint64 addr)
+wait(uint64 addr,uint64 buff)
 {
   struct proc *pp;
   int havekids, pid;
@@ -411,6 +429,7 @@ wait(uint64 addr)
         if(pp->state == ZOMBIE){
           // Found one.
           pid = pp->pid;
+          copyout(p->pagetable,(uint64)buff, (char *)&pp->exit_msg,sizeof(pp->exit_msg));
           if(addr != 0 && copyout(p->pagetable, addr, (char *)&pp->xstate,
                                   sizeof(pp->xstate)) < 0) {
             release(&pp->lock);
