@@ -108,6 +108,7 @@ extern uint64 sys_memsize(void);
 static uint64 (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
 [SYS_exit]    sys_exit,
+[SYS_exit2]   sys_exit,
 [SYS_wait]    sys_wait,
 [SYS_pipe]    sys_pipe,
 [SYS_read]    sys_read,

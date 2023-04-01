@@ -3,6 +3,7 @@
         "types.h": "c",
         "riscv.h": "c",
         "defs.h": "c",
-        "cstdlib": "cpp"
+        "cstdlib": "cpp",
+        "user.h": "c"
     },
 }
