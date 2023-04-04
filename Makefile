@@ -135,6 +135,9 @@ UPROGS=\
 	$U/_helloworld\
 	$U/_goodbye\
 	$U/_memsize_test\
+	$U/_test_new_sched\
+	$U/_task5_loop\
+
 
 
 fs.img: mkfs/mkfs README $(UPROGS)

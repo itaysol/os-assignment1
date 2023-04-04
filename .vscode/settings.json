@@ -4,6 +4,7 @@
         "riscv.h": "c",
         "defs.h": "c",
         "cstdlib": "cpp",
-        "user.h": "c"
+        "user.h": "c",
+        "proc.h": "c"
     },
 }

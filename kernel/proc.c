@@ -26,6 +26,8 @@ extern char trampoline[]; // trampoline.S
 // must be acquired before any p->lock.
 struct spinlock wait_lock;
 
+
+
 // Allocate a page for each process's kernel stack.
 // Map it high in memory, followed by an invalid
 // guard page.
@@ -122,8 +124,26 @@ allocproc(void)
   return 0;
 
 found:
+
+
   p->pid = allocpid();
   p->state = USED;
+  p->ps_priority = 5;
+
+  int min_accumulator = 0;
+  struct proc *p1;
+
+    // find minimum accumulator value among all runnable processes
+  for (p1 = proc; p1 < &proc[NPROC]; p1++) {
+    if ((p1->state == RUNNABLE || p1->state== RUNNING) && p1->pid != 0 && (min_accumulator == 0 || p1->accumulator < min_accumulator)) {
+      min_accumulator = p1->accumulator;
+    }
+  }
+
+
+  p->accumulator = min_accumulator;
+
+  
 
   // Allocate a trapframe page.
   if((p->trapframe = (struct trapframe *)kalloc()) == 0){
@@ -169,6 +189,7 @@ freeproc(struct proc *p)
   p->killed = 0;
   p->xstate = 0;
   p->state = UNUSED;
+  p->accumulator = 0;
 }
 
 // Create a user page table for a given process, with no user memory,
@@ -427,8 +448,7 @@ wait(uint64 addr,uint64 buff)
         if(pp->state == ZOMBIE){
           // Found one.
           pid = pp->pid;
-          int copyout_ret_val;
-          copyout_ret_val=copyout(p->pagetable,(uint64)buff, (char *)&pp->exit_msg,sizeof(pp->exit_msg));
+          copyout(p->pagetable,(uint64)buff, (char *)&pp->exit_msg,sizeof(pp->exit_msg));
           if(addr != 0 && copyout(p->pagetable, addr, (char *)&pp->xstate,
                                   sizeof(pp->xstate)) < 0) {
             release(&pp->lock);
@@ -467,28 +487,52 @@ scheduler(void)
 {
   struct proc *p;
   struct cpu *c = mycpu();
-  
   c->proc = 0;
   for(;;){
     // Avoid deadlock by ensuring that devices can interrupt.
     intr_on();
 
+    int min_accumulator = 0;
+    struct proc *min_proc = 0;
+    int foundOne = 0;
+
     for(p = proc; p < &proc[NPROC]; p++) {
+
       acquire(&p->lock);
       if(p->state == RUNNABLE) {
+        if(!foundOne){
+          min_accumulator = p->accumulator;
+          min_proc = p;
+          foundOne = 1;
+        }
+        else{
+          if(p->accumulator < min_accumulator){
+            min_accumulator = p->accumulator;
+            release(&min_proc->lock);
+            min_proc = p;
+          }
+          else{
+             release(&p->lock);
+          }
+        }
+      }
+      else{
+        release(&p->lock);
+      }
+     
+    }
         // Switch to chosen process.  It is the process's job
         // to release its lock and then reacquire it
-        // before jumping back to us.
-        p->state = RUNNING;
-        c->proc = p;
-        swtch(&c->context, &p->context);
-
-        // Process is done running for now.
-        // It should have changed its p->state before coming back.
+      // before jumping back to us.
+      if(min_proc!=0){  
+        min_proc->state = RUNNING;
+        c->proc = min_proc;
+        swtch(&c->context, &min_proc->context);
+          // Process is done running for now.
+          // It should have changed its p->state before coming back.
         c->proc = 0;
+        release(&min_proc->lock);
       }
-      release(&p->lock);
-    }
   }
 }
 
@@ -589,15 +633,29 @@ wakeup(void *chan)
 {
   struct proc *p;
 
+    int min_accumulator = 0;
+    struct proc *p1;
+
+    // find minimum accumulator value among all runnable processes
+    for (p1 = proc; p1 < &proc[NPROC]; p1++) {
+      if ((p1->state == RUNNABLE || p1->state== RUNNING) && p1->pid != 0 && (min_accumulator == 0 || p1->accumulator < min_accumulator)) {
+        min_accumulator = p1->accumulator;
+      }
+    }
+
   for(p = proc; p < &proc[NPROC]; p++) {
     if(p != myproc()){
       acquire(&p->lock);
       if(p->state == SLEEPING && p->chan == chan) {
         p->state = RUNNABLE;
+        p->accumulator = min_accumulator;// update accumulator for woken up process
       }
       release(&p->lock);
     }
   }
+  
+ 
+    
 }
 
 // Kill the process with the given pid.
@@ -623,6 +681,17 @@ kill(int pid)
   }
   return -1;
 }
+
+//hey
+
+int 
+set_ps_priority(int n){
+  struct proc *p = myproc();
+  p->ps_priority = n;
+  return -1;
+}
+
+
 
 void
 setkilled(struct proc *p)

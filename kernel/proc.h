@@ -92,6 +92,8 @@ struct proc {
   int xstate;                  // Exit status to be returned to parent's wait
   int pid;                     // Process ID
   char exit_msg[32];           // 32byte size exit_msg. ass1 task 3
+  long long accumulator;
+  int ps_priority;
 
   // wait_lock must be held when using this:
   struct proc *parent;         // Parent process
@@ -106,3 +108,5 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
 };
+
+
