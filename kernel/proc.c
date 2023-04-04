@@ -383,9 +383,7 @@ exit(int status, char* exit_msg)
   int nullCheck;
   argint(1, &nullCheck);
   int length = argstr(1, exit_msg, 32);
-  printf("sysproc|sysexit| nullCheck value is %d \n",nullCheck);
   if (nullCheck ==0){
-    // printf("proc|exit|385 \n");
    for (int i=0 ; i<32; i++) { // filling the rest of the exitmsg with 0
       p->exit_msg[i]=0;
     }
