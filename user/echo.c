@@ -15,5 +15,5 @@ main(int argc, char *argv[])
       write(1, "\n", 1);
     }
   }
-  exit(3,"12345678901234567890");
+  exit(3,0);
 }

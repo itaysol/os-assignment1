@@ -379,11 +379,10 @@ exit(int status, char* exit_msg)
   acquire(&p->lock);
 
   p->xstate = status;
-  printf("proc|exit|385"); 
   int nullCheck;
   argint(1, &nullCheck);
   int length = argstr(1, exit_msg, 32);
-  if (nullCheck ==0){
+  if (nullCheck==0){
    for (int i=0 ; i<32; i++) { // filling the rest of the exitmsg with 0
       p->exit_msg[i]=0;
     }
@@ -398,7 +397,6 @@ exit(int status, char* exit_msg)
     }
   }
   p->state = ZOMBIE;
-
   release(&wait_lock);
 
   // Jump into the scheduler, never to return.
@@ -429,7 +427,8 @@ wait(uint64 addr,uint64 buff)
         if(pp->state == ZOMBIE){
           // Found one.
           pid = pp->pid;
-          copyout(p->pagetable,(uint64)buff, (char *)&pp->exit_msg,sizeof(pp->exit_msg));
+          int copyout_ret_val;
+          copyout_ret_val=copyout(p->pagetable,(uint64)buff, (char *)&pp->exit_msg,sizeof(pp->exit_msg));
           if(addr != 0 && copyout(p->pagetable, addr, (char *)&pp->xstate,
                                   sizeof(pp->xstate)) < 0) {
             release(&pp->lock);
