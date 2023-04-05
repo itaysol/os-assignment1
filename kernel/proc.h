@@ -94,7 +94,14 @@ struct proc {
   char exit_msg[32];           // 32byte size exit_msg. ass1 task 3
   long long accumulator;
   int ps_priority;
-
+  int cfs_priority;
+  int rtime;
+  int stime;
+  int retime;
+  int start_rtime;  //last time the proc was running
+  int start_stime; //last time the proc was sleeping
+  int start_retime;  //last time the proc was runnable
+  int decaty_factor;
   // wait_lock must be held when using this:
   struct proc *parent;         // Parent process
 

@@ -6,6 +6,8 @@
 #include "proc.h"
 #include "defs.h"
 
+uint sched_policy;
+
 struct cpu cpus[NCPU];
 
 struct proc proc[NPROC];
@@ -129,6 +131,8 @@ found:
   p->pid = allocpid();
   p->state = USED;
   p->ps_priority = 5;
+  p->decaty_factor = 100;
+
 
   int min_accumulator = 0;
   struct proc *p1;
@@ -271,6 +275,7 @@ userinit(void)
   p->cwd = namei("/");
 
   p->state = RUNNABLE;
+  p->start_retime = ticks;
 
   release(&p->lock);
 }
@@ -343,6 +348,7 @@ fork(void)
 
   acquire(&np->lock);
   np->state = RUNNABLE;
+  np->start_retime = ticks;
   release(&np->lock);
 
   return pid;
@@ -425,6 +431,17 @@ exit(int status, char* exit_msg)
   panic("zombie exit");
 }
 
+int
+get_cfs_priority(uint64 cfs_priority,uint64 rtime,uint64 stime,uint64 retime) {
+  struct proc *p = myproc();
+  copyout(p->pagetable, cfs_priority, (char *)&p->cfs_priority, sizeof(p->cfs_priority));
+  copyout(p->pagetable, rtime, (char *)&p->rtime, sizeof(p->rtime));
+  copyout(p->pagetable, stime, (char *)&p->stime, sizeof(p->stime));
+  copyout(p->pagetable, retime, (char *)&p->retime, sizeof(p->retime));
+
+  return 1;
+}
+
 // Wait for a child process to exit and return its pid.
 // Return -1 if this process has no children.
 int
@@ -482,6 +499,48 @@ wait(uint64 addr,uint64 buff)
 //  - swtch to start running that process.
 //  - eventually that process transfers control
 //    via swtch back to the scheduler.
+
+// void
+// scheduler(void)
+// {
+//   struct proc *p;
+//   struct cpu *c = mycpu();
+  
+//   c->proc = 0;
+//   for(;;){
+//     // Avoid deadlock by ensuring that devices can interrupt.
+//     intr_on();
+
+//     for(p = proc; p < &proc[NPROC]; p++) {
+//       acquire(&p->lock);
+//       if(p->state == RUNNABLE) {
+//         // Switch to chosen process.  It is the process's job
+//         // to release its lock and then reacquire it
+//         // before jumping back to us.
+//         p->state = RUNNING;
+//         c->proc = p;
+//         swtch(&c->context, &p->context);
+//         release(&p->lock);
+//         // Process is done running for now.
+//         // It should have changed its p->state before coming back.
+//         c->proc = 0;
+//         if (sched_policy==0){
+
+//         }
+//         if (sched_policy==1) {
+
+//         }
+//         if (sched_policy==2) {
+
+//         }
+//       }
+//       else {
+//         release(&p->lock);
+//       }
+//     }
+//   }
+// }
+
 void
 scheduler(void)
 {
@@ -526,6 +585,8 @@ scheduler(void)
       // before jumping back to us.
       if(min_proc!=0){  
         min_proc->state = RUNNING;
+        min_proc->start_rtime=ticks;
+        min_proc->retime+= ticks - min_proc->start_retime;
         c->proc = min_proc;
         swtch(&c->context, &min_proc->context);
           // Process is done running for now.
@@ -534,6 +595,66 @@ scheduler(void)
         release(&min_proc->lock);
       }
   }
+}
+
+void
+cfscheduler(void)
+{
+  struct proc *p;
+  struct cpu *c = mycpu();
+  c->proc = 0;
+  for(;;){
+    // Avoid deadlock by ensuring that devices can interrupt.
+    intr_on();
+
+    int min_vruntime = 0;
+    struct proc *min_proc = 0;
+    int foundOne = 0;
+
+    for(p = proc; p < &proc[NPROC]; p++) {
+
+      acquire(&p->lock);
+      if(p->state == RUNNABLE) {
+        if(!foundOne){
+          min_vruntime = compute_vruntime(p);
+          min_proc = p;
+          foundOne = 1;
+        }
+        else{
+          if(compute_vruntime(p) < min_vruntime){
+            min_vruntime = compute_vruntime(p);
+            release(&min_proc->lock);
+            min_proc = p;
+          }
+          else{
+             release(&p->lock);
+          }
+        }
+      }
+      else{
+        release(&p->lock);
+      }
+     
+    }
+        // Switch to chosen process.  It is the process's job
+        // to release its lock and then reacquire it
+      // before jumping back to us.
+      if(min_proc!=0){  
+        min_proc->state = RUNNING;
+        c->proc = min_proc;
+        swtch(&c->context, &min_proc->context);
+          // Process is done running for now.
+          // It should have changed its p->state before coming back.
+        c->proc = 0;
+        release(&min_proc->lock);
+      }
+  }
+}
+
+int compute_vruntime(struct proc *p){
+  int vruntime = 0;
+  vruntime = (p->decaty_factor*p->rtime)/(p->rtime+p->stime+p->retime);
+  return vruntime;
 }
 
 // Switch to scheduler.  Must hold only p->lock
@@ -559,6 +680,7 @@ sched(void)
     panic("sched interruptible");
 
   intena = mycpu()->intena;
+  p->rtime += ticks - p->start_rtime;
   swtch(&p->context, &mycpu()->context);
   mycpu()->intena = intena;
 }
@@ -569,6 +691,8 @@ yield(void)
 {
   struct proc *p = myproc();
   acquire(&p->lock);
+  p->start_retime = ticks;
+  p->rtime += ticks - p->start_rtime;
   p->state = RUNNABLE;
   sched();
   release(&p->lock);
@@ -614,6 +738,7 @@ sleep(void *chan, struct spinlock *lk)
 
   // Go to sleep.
   p->chan = chan;
+  p->start_stime = ticks;
   p->state = SLEEPING;
 
   sched();
@@ -647,7 +772,9 @@ wakeup(void *chan)
     if(p != myproc()){
       acquire(&p->lock);
       if(p->state == SLEEPING && p->chan == chan) {
+        p->stime += ticks - p->start_stime;
         p->state = RUNNABLE;
+        p->start_retime = ticks;
         p->accumulator = min_accumulator;// update accumulator for woken up process
       }
       release(&p->lock);
@@ -672,6 +799,8 @@ kill(int pid)
       p->killed = 1;
       if(p->state == SLEEPING){
         // Wake process from sleep().
+        p->start_retime = ticks;
+        p->stime += ticks - p->start_stime; 
         p->state = RUNNABLE;
       }
       release(&p->lock);
@@ -689,6 +818,18 @@ set_ps_priority(int n){
   struct proc *p = myproc();
   p->ps_priority = n;
   return -1;
+}
+
+int
+set_cfs_priority(int n){
+  struct proc *p = myproc();
+  if (n==0)
+    p->decaty_factor=75;
+  if(n==1)
+    p->decaty_factor=100;
+  if(n==2)
+    p->decaty_factor=125;
+  return 1;
 }
 
 

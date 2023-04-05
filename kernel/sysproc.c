@@ -31,6 +31,19 @@ sys_fork(void)
 }
 
 uint64
+sys_get_cfs_priority(void){
+  uint64 a;
+  uint64 b;
+  uint64 c;
+  uint64 d;
+  argaddr(0,&a);
+  argaddr(1,&b);
+  argaddr(2,&c);
+  argaddr(3,&d);
+  return get_cfs_priority(a,b,c,d);
+}
+
+uint64
 sys_wait(void)
 {
   uint64 p;
@@ -107,4 +120,10 @@ sys_set_ps_priority(void){
   int answer;
   answer = set_ps_priority(n);
   return answer;
+}
+
+uint sys_set_cfs_priority(void){
+  int n;
+  argint(0,&n);
+  return set_cfs_priority(n);
 }

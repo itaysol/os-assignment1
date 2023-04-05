@@ -107,6 +107,9 @@ int             either_copyout(int user_dst, uint64 dst, void *src, uint64 len);
 int             either_copyin(void *dst, int user_src, uint64 src, uint64 len);
 void            procdump(void);
 int             set_ps_priority(int);
+int             set_cfs_priority(int);
+int             get_cfs_priority(uint64,uint64,uint64,uint64); // cfs_priority, rtime, stime, retime
+extern uint     sched_policy;          
 
 
 // swtch.S
